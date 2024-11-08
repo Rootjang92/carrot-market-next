@@ -1,6 +1,5 @@
 import FormInput from '@/components/form-input';
 import FormButton from '@/components/form-button';
-import SocialLogin from '@/components/social-login';
 
 export default function SMSLogin() {
   return (
@@ -14,7 +13,6 @@ export default function SMSLogin() {
         <FormInput type="number" placeholder="Verification code" required errors={[]} />
         <FormButton loading={false} text="Verify" />
       </form>
-      <SocialLogin />
     </div>
   );
 }
