@@ -3,9 +3,10 @@ interface Props {
   placeholder: string;
   required: boolean;
   errors: string[];
+  name: string;
 }
 
-export default function FormInput({ type, placeholder, required, errors }: Props) {
+export default function FormInput({ type, placeholder, required, errors, name }: Props) {
   return (
     <div className="flex flex-col gap-2">
       <input
@@ -13,6 +14,7 @@ export default function FormInput({ type, placeholder, required, errors }: Props
         type={type}
         placeholder={placeholder}
         required={required}
+        name={name}
       />
       {errors.map((error) => (
         <span className="text-red-500 font-medium" key={error}>
