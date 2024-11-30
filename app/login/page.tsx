@@ -18,8 +18,8 @@ export default function Login() {
         <h2 className="text-xl">Log in with email and password.</h2>
       </div>
       <form action={action} className="flex flex-col gap-3">
-        <FormInput type="email" name="email" placeholder="Email" required errors={[]} />
-        <FormInput type="password" name="password" placeholder="Password" required errors={state?.errors ?? []} />
+        <FormInput type="email" name="email" placeholder="Email" required />
+        <FormInput type="password" name="password" placeholder="Password" required />
         <FormButton text="Login" />
       </form>
       <SocialLogin />
