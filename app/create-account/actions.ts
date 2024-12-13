@@ -3,6 +3,8 @@
 
 import { z } from 'zod';
 
+const passwordRegex = new RegExp(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*?[#?!@$%^&*-]).+$/);
+
 const checkUserName = (username: string) => {
   return !username.includes('potato');
 };
@@ -17,9 +19,15 @@ const formSchema = z
       .string({ invalid_type_error: 'Username must be a string.', required_error: 'Username required.' })
       .min(3, 'Way too short!!')
       .max(10, 'That is too looong!')
+      .toLowerCase()
+      .trim()
+      .transform((username) => `test ${username}`)
       .refine((username) => checkUserName(username), 'Custom error.'),
-    email: z.string().email(),
-    password: z.string().min(10),
+    email: z.string().email().toLowerCase(),
+    password: z
+      .string()
+      .min(10)
+      .regex(passwordRegex, 'A password must have lowercase, UPPERCASE, a number and special characters.'),
     confirm_password: z.string().min(10),
   })
   .refine(checkPasswords, { message: 'Both password should be same.', path: ['confirm_password'] }); // formError
@@ -36,5 +44,7 @@ export async function createAccount(prevState: any, formData: FormData) {
 
   if (!result.success) {
     return result.error.flatten();
+  } else {
+    console.log(result.data);
   }
 }
