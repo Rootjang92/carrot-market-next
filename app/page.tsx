@@ -1,5 +1,7 @@
 import Link from 'next/link';
 
+import '@/lib/database';
+
 export default function Home() {
   return (
     <main className="flex flex-col items-center justify-between min-h-screen p-6">
