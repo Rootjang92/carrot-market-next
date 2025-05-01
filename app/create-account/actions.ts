@@ -4,6 +4,7 @@
 import { z } from 'zod';
 
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX, PASSWORD_REGEX_ERROR } from '@/lib/constants';
+import db from '@/lib/database';
 
 const checkUserName = (username: string) => {
   return !username.includes('potato');
@@ -13,6 +14,32 @@ const checkPasswords = ({ password, confirm_password }: { password: string; conf
   return password === confirm_password;
 };
 
+const checkUniqueUsername = async (username: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      username,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return !Boolean(user);
+};
+
+const checkUniqueEmail = async (email: string) => {
+  const user = await db.user.findUnique({
+    where: {
+      email,
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  return !Boolean(user);
+};
+
 const formSchema = z
   .object({
     username: z
@@ -20,9 +47,14 @@ const formSchema = z
       .min(3, 'Way too short!!')
       .toLowerCase()
       .trim()
-      .transform((username) => `test ${username}`)
-      .refine((username) => checkUserName(username), 'Custom error.'),
-    email: z.string().email().toLowerCase(),
+      .transform((username) => `${username}`)
+      .refine((username) => checkUserName(username), 'Custom error.')
+      .refine((username) => checkUniqueUsername(username), 'This username is already taken'),
+    email: z
+      .string()
+      .email()
+      .toLowerCase()
+      .refine((email) => checkUniqueEmail(email), 'There is account already registered with that email.'),
     password: z.string().min(PASSWORD_MIN_LENGTH).regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
   })
@@ -36,11 +68,11 @@ export async function createAccount(prevState: any, formData: FormData) {
     confirm_password: formData.get('confirm_password'),
   };
 
-  const result = formSchema.safeParse(data); // Not error throw
+  const result = await formSchema.safeParseAsync(data); // Not error throw
 
   if (!result.success) {
     return result.error.flatten();
   } else {
-    console.log(result.data);
+    // validation 종료 후 success 로직 추가
   }
 }
