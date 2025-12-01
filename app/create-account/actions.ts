@@ -3,6 +3,9 @@
 
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { getIronSession } from 'iron-session';
 
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX, PASSWORD_REGEX_ERROR } from '@/lib/constants';
 import db from '@/lib/database';
@@ -62,6 +65,7 @@ const formSchema = z
   .refine(checkPasswords, { message: 'Both password should be same.', path: ['confirm_password'] }); // formError
 
 export async function createAccount(prevState: any, formData: FormData) {
+  console.log(cookies);
   const data = {
     username: formData.get('username'),
     email: formData.get('email'),
@@ -87,6 +91,15 @@ export async function createAccount(prevState: any, formData: FormData) {
       },
     });
 
-    console.log(user);
+    const session = await getIronSession(cookies(), {
+      cookieName: 'delicious-karrot',
+      password: process.env.COOKIE_PASSWORD!,
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    //@ts-expect-error
+    session.id = user.id;
+    await session.save();
+    redirect('/profile');
   }
 }
