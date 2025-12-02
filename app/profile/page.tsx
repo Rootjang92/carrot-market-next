@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 
 import getSession from '@/lib/session';
 import db from '@/lib/database';
@@ -11,9 +11,10 @@ async function getUser() {
         id: session.id,
       },
     });
-
-    return user;
+    if (user) return user;
   }
+
+  notFound();
 }
 
 export default async function Profile() {
