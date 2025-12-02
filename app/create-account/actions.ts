@@ -3,45 +3,14 @@
 
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX, PASSWORD_REGEX_ERROR } from '@/lib/constants';
 import db from '@/lib/database';
 import getSession from '@/lib/session';
 
-const checkUserName = (username: string) => {
-  return !username.includes('potato');
-};
-
 const checkPasswords = ({ password, confirm_password }: { password: string; confirm_password: string }) => {
   return password === confirm_password;
-};
-
-const checkUniqueUsername = async (username: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      username,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  return !Boolean(user);
-};
-
-const checkUniqueEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email,
-    },
-    select: {
-      id: true,
-    },
-  });
-
-  return !Boolean(user);
 };
 
 const formSchema = z
@@ -51,21 +20,54 @@ const formSchema = z
       .min(3, 'Way too short!!')
       .toLowerCase()
       .trim()
-      .transform((username) => `${username}`)
-      .refine((username) => checkUserName(username), 'Custom error.')
-      .refine((username) => checkUniqueUsername(username), 'This username is already taken'),
-    email: z
-      .string()
-      .email()
-      .toLowerCase()
-      .refine((email) => checkUniqueEmail(email), 'There is account already registered with that email.'),
+      .transform((username) => `${username}`),
+    email: z.string().email().toLowerCase(),
     password: z.string().min(PASSWORD_MIN_LENGTH).regex(PASSWORD_REGEX, PASSWORD_REGEX_ERROR),
     confirm_password: z.string().min(PASSWORD_MIN_LENGTH),
   })
-  .refine(checkPasswords, { message: 'Both password should be same.', path: ['confirm_password'] }); // formError
+  .superRefine(async ({ username }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        username,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'This username is already taken',
+        path: ['username'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .superRefine(async ({ email }, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        email,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (user) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'This email is already taken',
+        path: ['email'],
+        fatal: true,
+      });
+      return z.NEVER;
+    }
+  })
+  .refine(checkPasswords, { message: 'Both password should be same.', path: ['confirm_password'] });
 
 export async function createAccount(prevState: any, formData: FormData) {
-  console.log(cookies);
   const data = {
     username: formData.get('username'),
     email: formData.get('email'),
