@@ -5,10 +5,10 @@ import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getIronSession } from 'iron-session';
 
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX, PASSWORD_REGEX_ERROR } from '@/lib/constants';
 import db from '@/lib/database';
+import getSession from '@/lib/session';
 
 const checkUserName = (username: string) => {
   return !username.includes('potato');
@@ -91,13 +91,8 @@ export async function createAccount(prevState: any, formData: FormData) {
       },
     });
 
-    const session = await getIronSession(cookies(), {
-      cookieName: 'delicious-karrot',
-      password: process.env.COOKIE_PASSWORD!,
-    });
+    const session = await getSession();
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    //@ts-expect-error
     session.id = user.id;
     await session.save();
     redirect('/profile');
