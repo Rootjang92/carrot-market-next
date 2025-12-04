@@ -3,11 +3,10 @@
 
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
-import { redirect } from 'next/navigation';
 
 import { PASSWORD_MIN_LENGTH, PASSWORD_REGEX, PASSWORD_REGEX_ERROR } from '@/lib/constants';
 import db from '@/lib/database';
-import getSession from '@/lib/session';
+import login from '@/lib/login';
 
 const checkPasswords = ({ password, confirm_password }: { password: string; confirm_password: string }) => {
   return password === confirm_password;
@@ -93,10 +92,6 @@ export async function createAccount(prevState: any, formData: FormData) {
       },
     });
 
-    const session = await getSession();
-
-    session.id = user.id;
-    await session.save();
-    redirect('/profile');
+    await login(user);
   }
 }

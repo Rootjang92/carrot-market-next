@@ -1,8 +1,8 @@
 import { NextRequest } from 'next/server';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 
 import db from '@/lib/database';
-import getSession from '@/lib/session';
+import login from '@/lib/login';
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get('code');
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     cache: 'no-cache', // Next.js 15 버전부터는 캐시가 되지 않음.
   });
 
-  const { id, avatar_url, login } = await userProfileRequest.json();
+  const { id, avatar_url, login: username } = await userProfileRequest.json();
 
   const user = await db.user.findUnique({
     where: {
@@ -53,16 +53,13 @@ export async function GET(request: NextRequest) {
   });
 
   if (user) {
-    const session = await getSession();
-    session.id = user.id;
-    await session.save();
-    return redirect('/profile');
+    await login(user);
   }
 
   const newUser = await db.user.create({
     data: {
       githubId: id + '',
-      username: login,
+      username,
       avatar: avatar_url,
     },
     select: {
@@ -70,9 +67,5 @@ export async function GET(request: NextRequest) {
     },
   });
 
-  const session = await getSession();
-  session.id = newUser.id;
-  await session.save();
-
-  return redirect('/profile');
+  await login(newUser);
 }
