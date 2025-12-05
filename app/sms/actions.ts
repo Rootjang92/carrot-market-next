@@ -11,6 +11,7 @@ import getSession from '@/lib/session';
 
 interface ActionState {
   token: boolean;
+  phone?: string;
 }
 
 async function getToken(): Promise<string> {
@@ -95,14 +96,15 @@ export async function smsVerification(prevState: ActionState, formData: FormData
         to: process.env.MY_PHONE_NUMBER!, // 원래는 result.data 지만 유료이기 때문에 작성자 번호로
       });
 
-      return { token: true };
+      return { token: true, phone: result.data };
     }
   } else {
     const result = await tokenSchema.spa(token);
+    const phoneResult = await phoneSchema.safeParse(prevState.phone);
 
     if (!result.success) {
       return {
-        token: true,
+        ...prevState,
         // return the errors
         error: result.error.flatten(),
       };
@@ -111,12 +113,24 @@ export async function smsVerification(prevState: ActionState, formData: FormData
       const token = await db.sMSToken.findUnique({
         where: {
           token: result.data.toString(),
+          user: {
+            phone: phoneResult.data,
+          },
         },
         select: {
           id: true,
           userId: true,
         },
       });
+
+      if (!token) {
+        return {
+          ...prevState,
+          error: {
+            formErrors: ['This token is not exist.'],
+          },
+        };
+      }
 
       const session = await getSession();
       session.id = token!.userId;
