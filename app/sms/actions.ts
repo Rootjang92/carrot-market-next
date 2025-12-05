@@ -4,6 +4,7 @@ import { z } from 'zod';
 import validator from 'validator';
 import { redirect } from 'next/navigation';
 import crypto from 'crypto';
+import twilio from 'twilio';
 
 import db from '@/lib/database';
 import getSession from '@/lib/session';
@@ -84,6 +85,14 @@ export async function smsVerification(prevState: ActionState, formData: FormData
             },
           },
         },
+      });
+
+      const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+      await client.messages.create({
+        body: `Your Karrot verification code is: ${token}`,
+        from: process.env.TWILIO_PHONE_NUMBER!,
+        to: process.env.MY_PHONE_NUMBER!, // 원래는 result.data 지만 유료이기 때문에 작성자 번호로
       });
 
       return { token: true };
