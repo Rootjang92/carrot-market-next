@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
 import { z } from 'zod';
@@ -22,7 +23,7 @@ const productSchema = z.object({
   }),
 });
 
-export async function uploadProduct(formData: FormData) {
+export async function uploadProduct(_: any, formData: FormData) {
   const data = {
     photo: formData.get('photo'),
     title: formData.get('title'),
