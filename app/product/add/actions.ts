@@ -1,36 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use server';
 
-import { z } from 'zod';
 import { redirect } from 'next/navigation';
 
 import db from '@/lib/database';
 import getSession from '@/lib/session';
+import { productSchema } from './schema';
 
-const productSchema = z.object({
-  photo: z.string({
-    required_error: 'Photo is required.',
-  }),
-  title: z.string({
-    required_error: 'Title is required.',
-  }),
-  description: z.string({
-    required_error: 'Description is required.',
-  }),
-  price: z.coerce.number({
-    required_error: 'Price is required.',
-  }),
-});
-
-export async function uploadProduct(_: any, formData: FormData) {
+export async function uploadProduct(formData: FormData) {
   const data = {
     photo: formData.get('photo'),
     title: formData.get('title'),
-    price: formData.get('price'),
+    price: Number(formData.get('price')),
     description: formData.get('description'),
   };
 
   const result = productSchema.safeParse(data);
+
+  console.log(result);
 
   if (!result.success) {
     return result.error.flatten();
@@ -70,7 +57,7 @@ export async function getUploadUrl() {
     },
   );
 
-  const data = response.json();
+  const data = await response.json();
 
   return data;
 }
