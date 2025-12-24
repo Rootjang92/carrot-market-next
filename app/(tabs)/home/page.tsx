@@ -30,6 +30,7 @@ export default async function Chat() {
 
   return (
     <div className="p-5 flex flex-col gap-5">
+      <Link href="/home/recent">Recent products</Link>
       <ProductList initialProducts={initialProduct} />
       <Link
         href={'/product/add'}

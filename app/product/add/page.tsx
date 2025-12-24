@@ -20,7 +20,6 @@ export default function AddProduct() {
     register,
     handleSubmit,
     setValue,
-    setError,
     formState: { errors },
   } = useForm<ProductType>({
     resolver: zodResolver(productSchema),
@@ -63,11 +62,7 @@ export default function AddProduct() {
     formData.append('description', data.description);
     formData.append('photo', data.photo);
 
-    const errors = await uploadProduct(formData);
-
-    if (errors) {
-      // setError('');
-    }
+    await uploadProduct(formData);
   });
 
   const onValid = async () => {
