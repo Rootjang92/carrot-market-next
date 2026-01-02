@@ -36,7 +36,7 @@ async function getProduct(id: number) {
 }
 
 const getCachedProduct = nextCache(getProduct, ['product-detail'], {
-  tags: ['product-details'],
+  tags: ['product-details', 'product'],
 });
 
 async function getProductTitle(id: number) {
@@ -53,7 +53,7 @@ async function getProductTitle(id: number) {
 }
 
 const getCachedProductTitle = nextCache(getProductTitle, ['product-title'], {
-  tags: ['product-title', 'xxxx'],
+  tags: ['product-title', 'product'],
 });
 
 export async function generateMetadata({ params }: { params: { id: string } }) {
@@ -111,6 +111,12 @@ export default async function ProductDetail({ params }: { params: { id: string }
             </button>
           </form>
         ) : null}
+        <Link
+          className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold"
+          href={`/products/${product.id}/edit`}
+        >
+          수정하기
+        </Link>
         <Link className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold" href={``}>
           채팅하기
         </Link>
