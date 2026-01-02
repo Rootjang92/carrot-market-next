@@ -13,7 +13,7 @@ interface ListProductProps {
 
 export default function ListProduct({ title, price, created_at, photo, id }: ListProductProps) {
   return (
-    <Link href={`/product/${id}`} className="flex gap-5">
+    <Link href={`/products/${id}`} className="flex gap-5">
       <div className="relative size-28 rounded-md overflow-hidden">
         <Image fill src={`${photo}/avatar`} alt={title} className="object-cover" />
       </div>

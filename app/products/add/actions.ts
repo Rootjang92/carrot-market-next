@@ -41,7 +41,7 @@ export async function uploadProduct(formData: FormData) {
         },
       });
 
-      redirect(`/product/${product.id}`);
+      redirect(`/products/${product.id}`);
     }
   }
 }
