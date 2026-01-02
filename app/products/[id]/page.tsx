@@ -4,22 +4,20 @@ import Link from 'next/link';
 import { unstable_cache as nextCache, revalidateTag } from 'next/cache';
 
 import db from '@/lib/database';
-import getSession from '@/lib/session';
 import { UserIcon } from '@heroicons/react/24/solid';
 import { formatToWon } from '@/lib/utils';
 
 async function getIsOwner(userId: number) {
-  const session = await getSession();
+  // const session = await getSession();
 
-  if (session.id) {
-    return session.id === userId;
-  }
+  // if (session.id) {
+  //   return session.id === userId;
+  // }
 
   return false;
 }
 
 async function getProduct(id: number) {
-  console.log('Product');
   const product = await db.product.findUnique({
     where: {
       id,
@@ -42,7 +40,6 @@ const getCachedProduct = nextCache(getProduct, ['product-detail'], {
 });
 
 async function getProductTitle(id: number) {
-  console.log('title');
   const product = await db.product.findUnique({
     where: {
       id,
@@ -120,4 +117,13 @@ export default async function ProductDetail({ params }: { params: { id: string }
       </div>
     </div>
   );
+}
+
+export async function generateStaticParams() {
+  const products = await db.product.findMany({
+    select: {
+      id: true,
+    },
+  });
+  return products.map((product) => ({ id: product.id + '' }));
 }
