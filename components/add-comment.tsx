@@ -22,21 +22,21 @@ export function Addcomment({ postId, handleSubmit, user }: Props) {
   };
 
   return (
-    <div className="w-full h-16 absolute bottom-0 px-5 border-t border-neutral-600">
-      <form className="flex space-x-4 justify-around items-center size-full" onSubmit={onSubmit}>
+    <div className="fixed bottom-0 left-0 right-0 bg-neutral-800 border-t border-neutral-700 px-5 py-3">
+      <form className="flex gap-3 items-center max-w-screen-sm mx-auto" onSubmit={onSubmit}>
         <input
-          placeholder={user ? '댓글 입력하기.' : '로그인 해주세요.'}
-          className="w-11/12 h-12 bg-transparent rounded-full focus:outline-none outline-offset-2"
+          placeholder={user ? '댓글을 입력하세요' : '로그인이 필요합니다'}
+          className="flex-1 bg-neutral-700 rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
           name="payload"
           disabled={!user}
         />
         {user && (
           <button
-            className="text-orange-500 hover:text-orange-400 active:text-orange-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:animate-pulse"
+            className="text-orange-500 hover:text-orange-400 disabled:text-neutral-500 disabled:cursor-not-allowed transition-colors"
             type="submit"
             disabled={loading}
           >
-            <PaperAirplaneIcon className="size-8" />
+            <PaperAirplaneIcon className="size-6" />
           </button>
         )}
       </form>

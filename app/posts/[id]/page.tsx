@@ -6,8 +6,10 @@ import { unstable_cache as nextCache } from 'next/cache';
 import db from '@/lib/database';
 import { formatToTimeAgo } from '@/lib/utils';
 import getSession from '@/lib/session';
+import { getComments } from './actions';
 
 import LikeButton from '@/components/like-button';
+import { CommentList } from '@/components/comment-list';
 
 async function getPost(id: number) {
   try {
@@ -46,6 +48,32 @@ const cachedPost = nextCache(getPost, ['post-detail'], {
   tags: ['post-detail'],
   revalidate: 60,
 });
+
+const getCachedComments = (postId: number) => {
+  const cachedComments = nextCache(getComments, ['comments'], {
+    tags: [`comments-${postId}`],
+  });
+
+  return cachedComments(postId);
+};
+
+async function getMe() {
+  const session = await getSession();
+  const user = session.id
+    ? await db.user.findUnique({
+        where: {
+          id: session.id,
+        },
+        select: {
+          id: true,
+          avatar: true,
+          username: true,
+        },
+      })
+    : null;
+
+  return user;
+}
 
 async function getLikeStatus(postId: number, userId: number) {
   const isLiked = await db.like.findUnique({
@@ -87,6 +115,10 @@ export default async function PostDetail({ params }: { params: { id: string } })
 
   const { likeCount, isLiked } = await getCachedLikeStatus(id, session.id!);
 
+  const allComments = await getCachedComments(post.id);
+
+  const user = await getMe();
+
   return (
     <div className="p-5 text-white">
       <div className="flex items-center gap-2 mb-2">
@@ -113,6 +145,7 @@ export default async function PostDetail({ params }: { params: { id: string } })
         </div>
         <LikeButton isLiked={isLiked} likeCount={likeCount} postId={id} />
       </div>
+      <CommentList postId={post.id} allComments={allComments} user={user} />
     </div>
   );
 }
