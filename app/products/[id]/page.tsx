@@ -2,10 +2,12 @@ import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { unstable_cache as nextCache, revalidateTag } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 import db from '@/lib/database';
 import { UserIcon } from '@heroicons/react/24/solid';
 import { formatToWon } from '@/lib/utils';
+import getSession from '@/lib/session';
 
 async function getIsOwner(userId: number) {
   // const session = await getSession();
@@ -13,7 +15,7 @@ async function getIsOwner(userId: number) {
   // if (session.id) {
   //   return session.id === userId;
   // }
-
+  console.log(userId);
   return false;
 }
 
@@ -80,6 +82,27 @@ export default async function ProductDetail({ params }: { params: { id: string }
     revalidateTag('xxxx');
   };
 
+  const createChatRoom = async () => {
+    'use server';
+    const session = await getSession();
+    const room = await db.chatRoom.create({
+      data: {
+        users: {
+          connect: [
+            {
+              id: product.userId,
+            },
+            {
+              id: session.id,
+            },
+          ],
+        },
+      },
+    });
+
+    redirect(`/chat/${room.id}`);
+  };
+
   return (
     <div>
       <div className="relative aspect-square">
@@ -117,9 +140,9 @@ export default async function ProductDetail({ params }: { params: { id: string }
         >
           수정하기
         </Link>
-        <Link className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold" href={``}>
-          채팅하기
-        </Link>
+        <form action={createChatRoom}>
+          <button className="bg-orange-500 px-5 py-2.5 rounded-md text-white font-semibold">채팅하기</button>
+        </form>
       </div>
     </div>
   );
