@@ -11,12 +11,14 @@ interface Props {
   initialMessages: InitialChatMessages;
   userId: number;
   chatRoomId: string;
+  username: string;
+  avatar: string;
 }
 
 const SUPABASE_PUBLIC_KEY = `sb_publishable_x5mgohIUDRMzrnHUdP0KaA_2W4SlKCB`;
 const SUPABASE_URL = `https://rjmrjqhemnxjuvefctai.supabase.co`;
 
-export default function ChatMessages({ initialMessages, userId, chatRoomId }: Props) {
+export default function ChatMessages({ initialMessages, userId, chatRoomId, username, avatar }: Props) {
   const [messages, setMessages] = useState(initialMessages);
   const [message, setMessage] = useState('');
 
@@ -47,7 +49,16 @@ export default function ChatMessages({ initialMessages, userId, chatRoomId }: Pr
     channel.current?.send({
       type: 'broadcast',
       event: 'message',
-      payload: { message },
+      payload: {
+        id: Date.now(),
+        payload: message,
+        created_at: new Date(),
+        userId,
+        user: {
+          username,
+          avatar,
+        },
+      },
     });
     setMessage('');
   };
@@ -58,7 +69,7 @@ export default function ChatMessages({ initialMessages, userId, chatRoomId }: Pr
     channel.current = client.channel(`room-${chatRoomId}`);
     channel.current
       .on('broadcast', { event: 'message' }, (payload) => {
-        console.log(payload);
+        setMessages((prev) => [...prev, payload.payload]);
       })
       .subscribe();
 
