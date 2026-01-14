@@ -2,10 +2,11 @@
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { createClient, RealtimeChannel } from '@supabase/supabase-js';
+import { ArrowUpCircleIcon } from '@heroicons/react/24/solid';
 
 import { InitialChatMessages } from '@/app/chat/[id]/page';
 import { formatToTimeAgo } from '@/lib/utils';
-import { ArrowUpCircleIcon } from '@heroicons/react/24/solid';
+import { saveMessage } from '@/app/chat/action';
 
 interface Props {
   initialMessages: InitialChatMessages;
@@ -31,7 +32,7 @@ export default function ChatMessages({ initialMessages, userId, chatRoomId, user
     setMessage(value);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessages((prev) => [
       ...prev,
@@ -60,6 +61,8 @@ export default function ChatMessages({ initialMessages, userId, chatRoomId, user
         },
       },
     });
+
+    await saveMessage(message, chatRoomId);
     setMessage('');
   };
 
